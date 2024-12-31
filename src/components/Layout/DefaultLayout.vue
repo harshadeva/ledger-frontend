@@ -11,13 +11,18 @@ const menuItems: Array<object> = [
     icon: 'fa fa-user',
   },
   {
+    name: 'Projects',
+    to: '/projects',
+    icon: 'fa fa-user',
+  },
+  {
     name: 'Create Project',
     to: '/projects/create',
     icon: 'fa fa-user',
   },
   {
-    name: 'Categories',
-    to: '/categories',
+    name: 'Login',
+    to: '/login',
     icon: 'fa fa-user',
   },
 ]

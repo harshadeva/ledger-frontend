@@ -8,4 +8,18 @@ const apiClient = axios.create({
   },
 })
 
+// Axios request interceptor to add the token to headers
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken') // Replace 'userToken' with the key you're using for storing the token
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  },
+)
+
 export default apiClient

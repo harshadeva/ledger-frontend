@@ -38,9 +38,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <DefaultLayout :container="true">
-    
-  </DefaultLayout>
+  <DefaultLayout :container="true"> </DefaultLayout>
 </template>
 
 <style scoped>

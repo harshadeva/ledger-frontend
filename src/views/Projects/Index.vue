@@ -1,79 +1,137 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
-import axios from 'axios'
+import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
+import dayjs from 'dayjs'
 
 defineOptions({
-  name: 'HomePage',
+  name: 'ProjectList',
 })
 
-const form = ref()
+interface Project {
+  id: number
+  name: string
+  total: number
+  start_date: string
+  due_date: string
+}
+
 const loading = ref(false)
-
-const project = reactive({
-  name: '',
-  total: null as number | null,
-  startDate: null as string | null,
-  endDate: null as string | null,
+const projects = ref<Project[]>([])
+const pagination = reactive({
+  current: 1,
+  pageSize: 10,
+  total: 0,
 })
 
-const handleSubmit = async () => {
+const filters = reactive({
+  name: '',
+  dateRange: [] as [string | null, string | null],
+})
+
+const fetchProjects = async () => {
   try {
     loading.value = true
-    await axios.post('/projects', {
-      name: project.name,
-      total: project.total,
-      startDate: project.startDate,
-      endDate: project.endDate,
+    const response = await apiClient.get('/projects', {
+      params: {
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+        name: filters.name,
+        startDate: filters.dateRange[0],
+        dueDate: filters.dateRange[1],
+      },
     })
-    message.success('Project created successfully!')
-    form.value?.resetFields()
+
+    projects.value = response.data.data
+    pagination.total = response.data.total
   } catch (error) {
-    message.error('Failed to create project. Please try again later.')
+    message.error('Failed to load projects. Please try again.')
   } finally {
     loading.value = false
   }
 }
+
+// Watch for filter or pagination changes
+watch([() => filters.name, () => filters.dateRange, () => pagination.current], fetchProjects)
+
+const handleTableChange = (paginationInfo: { current: number; pageSize: number }) => {
+  pagination.current = paginationInfo.current
+  pagination.pageSize = paginationInfo.pageSize
+}
+
+const handleDelete = async (id: number) => {
+  try {
+    loading.value = true
+    await apiClient.delete(`/projects/${id}`)
+    message.success('Project deleted successfully!')
+    fetchProjects()
+  } catch (error) {
+    message.error('Failed to delete project. Please try again.')
+  } finally {
+    loading.value = false
+  }
+}
+
+const columns = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+  },
+  {
+    title: 'Total',
+    dataIndex: 'formatted_total',
+  },
+  {
+    title: 'Start Date',
+    dataIndex: 'start_date',
+  },
+  {
+    title: 'Due Date',
+    dataIndex: 'due_date',
+  },
+  {
+    title: 'Actions',
+    dataIndex: 'actions',
+  },
+]
+
+fetchProjects() // Initial fetch
 </script>
 
 <template>
-  <DefaultLayout :container="true">
-    <a-form :form="form" @submit.prevent="handleSubmit" layout="vertical">
-      <a-form-item
-        label="Project Name"
-        :rules="[{ required: true, message: 'Please enter project name!' }]"
-      >
-        <a-input v-model:value="project.name" placeholder="Enter project name" />
-      </a-form-item>
-
-      <a-form-item label="Total" :rules="[{ required: true, message: 'Please enter total!' }]">
-        <a-input-number
-          v-model:value="project.total"
-          :min="0"
-          placeholder="Enter total"
-          style="width: 100%"
+  <DefaultLayout>
+    <a-card title="Project List" :loading="loading">
+      <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center">
+        <a-input
+          v-model:value="filters.name"
+          placeholder="Filter by project name"
+          style="width: 300px"
         />
-      </a-form-item>
-
-      <a-form-item
-        label="Start Date"
-        :rules="[{ required: true, message: 'Please select start date!' }]"
+        <a-range-picker v-model:value="filters.dateRange" style="width: 300px" :allowClear="true" />
+        <a-button type="primary" @click="fetchProjects">Search</a-button>
+      </div>
+      <a-table
+        :data-source="projects"
+        :pagination="pagination"
+        @change="handleTableChange"
+        rowKey="id"
+        :loading="loading"
+        :columns="columns"
       >
-        <a-date-picker v-model:value="project.startDate" style="width: 100%" />
-      </a-form-item>
-
-      <a-form-item
-        label="End Date"
-        :rules="[{ required: true, message: 'Please select end date!' }]"
-      >
-        <a-date-picker v-model:value="project.endDate" style="width: 100%" />
-      </a-form-item>
-
-      <a-form-item>
-        <a-button type="primary" html-type="submit" :loading="loading">Create Project</a-button>
-      </a-form-item>
-    </a-form>
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'actions'">
+            <!-- <a-button
+              type="link"
+              @click="$router.push({ name: 'ProjectEdit', params: { id: record.id } })"
+            >
+              Edit
+            </a-button> -->
+            <a-button danger @click="handleDelete(record.id)"> Delete </a-button>
+          </template>
+        </template>
+      </a-table>
+    </a-card>
   </DefaultLayout>
 </template>
 

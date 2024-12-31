@@ -1,33 +1,34 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import apiClient from '@/utils/axios'; // Assuming you have axios setup
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import apiClient from '@/utils/axios'
 
-const router = useRouter();
+const router = useRouter()
 
-const user = ref({ email: '', password: '' });
-const loading = ref(false);
-const errorMessage = ref('');
+const user = ref({ email: 'hpbandara94@gmail.com', password: '12345678' })
+const loading = ref(false)
+const errorMessage = ref('')
 
 const handleLogin = async () => {
-  errorMessage.value = '';
-  loading.value = true;
+  errorMessage.value = ''
+  loading.value = true
   try {
-    const response = await apiClient.post('/auth/login', user.value);
-    const { token, user: userInfo } = response.data;
-    
+    const response = await apiClient.post('/login', user.value)
+    console.log(response.data)
+    const { token, user: userInfo } = response.data
+
     // Store token and user info
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(userInfo));
+    localStorage.setItem('authToken', token)
+    localStorage.setItem('user', JSON.stringify(userInfo))
 
     // Navigate to dashboard
-    router.push('/dashboard');
+    router.push('/projects/create')
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Login failed!';
+    errorMessage.value = error.response?.data?.message || 'Login failed!'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 </script>
 
 <template>
@@ -37,12 +38,24 @@ const handleLogin = async () => {
 
       <div class="form-item">
         <label for="email">Email</label>
-        <input v-model="user.email" type="email" id="email" required placeholder="Enter your email" />
+        <input
+          v-model="user.email"
+          type="email"
+          id="email"
+          required
+          placeholder="Enter your email"
+        />
       </div>
 
       <div class="form-item">
         <label for="password">Password</label>
-        <input v-model="user.password" type="password" id="password" required placeholder="Enter your password" />
+        <input
+          v-model="user.password"
+          type="password"
+          id="password"
+          required
+          placeholder="Enter your password"
+        />
       </div>
 
       <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
