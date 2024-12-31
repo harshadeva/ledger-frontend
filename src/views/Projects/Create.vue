@@ -4,6 +4,7 @@ import { message } from 'ant-design-vue'
 import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
 import { AxiosError } from 'axios'
+import { handleFormErrors, resetFormErrors } from '@/utils/errorHandler'
 
 defineOptions({
   name: 'ProjectCreate',
@@ -28,20 +29,18 @@ const project = reactive({
 const handleSubmit = async () => {
   try {
     loading.value = true
-    resetErrorMessages()
+    resetFormErrors(errorMessages)
     const response = await apiClient.post('/projects', {
       name: project.name,
       total: project.total,
       start_date: project.startDate,
       due_date: project.dueDate,
     })
-
-    console.log(response)
-    message.success('Project created successfully!')
+    message.success(response.data.message)
     resetForm()
   } catch (error) {
     const err = error as AxiosError
-    handleErrors(err)
+    handleFormErrors(err, errorMessages)
   } finally {
     loading.value = false
   }
@@ -55,28 +54,6 @@ const resetForm = () => {
     dueDate: null,
   })
   form.value?.resetFields()
-}
-
-const resetErrorMessages = () => {
-  // Reset error messages first
-  Object.keys(errorMessages).forEach((key) => {
-    errorMessages[key as keyof typeof errorMessages] = ''
-  })
-}
-
-const handleErrors = (error: AxiosError) => {
-  resetErrorMessages()
-  // Check for validation errors
-  if (error?.response && error?.response?.data && error?.response?.data?.error) {
-    const validationErrors = error.response.data.error
-    for (const field in validationErrors) {
-      errorMessages[field as keyof typeof errorMessages] = validationErrors[field]
-    }
-  }
-  // Check for generic error message
-  if (error?.response && error?.response?.data && error?.response?.data?.error?.error_message) {
-    message.error(error?.response?.data?.error?.error_message)
-  }
 }
 </script>
 

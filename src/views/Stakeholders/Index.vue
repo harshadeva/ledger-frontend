@@ -7,19 +7,17 @@ import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
 
 defineOptions({
-  name: 'ProjectList',
+  name: 'StakeholdersList',
 })
 
-interface Project {
+interface Stakeholder {
   id: number
   name: string
-  total: number
-  start_date: string
-  due_date: string
+  nickname: string
 }
 
 const loading = ref(false)
-const projects = ref<Project[]>([])
+const records = ref<Stakeholder[]>([])
 const pagination = reactive({
   current: 1,
   pageSize: 10,
@@ -31,30 +29,28 @@ const filters = reactive({
   dateRange: [] as [string | null, string | null],
 })
 
-const fetchProjects = async () => {
+const fetchRecords = async () => {
   try {
     loading.value = true
-    const response = await apiClient.get('/projects', {
+    const response = await apiClient.get('/people', {
       params: {
         page: pagination.current,
         pageSize: pagination.pageSize,
         name: filters.name,
-        startDate: filters.dateRange[0],
-        dueDate: filters.dateRange[1],
       },
     })
 
-    projects.value = response.data.data
+    records.value = response.data.data
     pagination.total = response.data.total
   } catch (error) {
-    message.error('Failed to load projects. Please try again.')
+    message.error('Failed to load data. Please try again.')
   } finally {
     loading.value = false
   }
 }
 
 // Watch for filter or pagination changes
-watch([() => filters.name, () => filters.dateRange, () => pagination.current], fetchProjects)
+watch([() => filters.name, () => pagination.current], fetchRecords)
 
 const handleTableChange = (paginationInfo: { current: number; pageSize: number }) => {
   pagination.current = paginationInfo.current
@@ -63,7 +59,7 @@ const handleTableChange = (paginationInfo: { current: number; pageSize: number }
 
 const handleDelete = async (id: number) => {
   Modal.confirm({
-    title: 'Are you sure you want to delete this project?',
+    title: 'Are you sure you want to delete this record?',
     content: 'This action cannot be undone.',
     okText: 'Yes, Delete',
     okType: 'danger',
@@ -72,9 +68,9 @@ const handleDelete = async (id: number) => {
     onOk: async () => {
       try {
         loading.value = true
-        const response = await apiClient.delete(`/projects/${id}`)
+        const response = await apiClient.delete(`/people/${id}`)
         message.success(response?.data?.message)
-        fetchProjects()
+        fetchRecords()
       } catch (error) {
         const err = error as AxiosError
         handleAxiosError(err)
@@ -91,16 +87,8 @@ const columns = [
     dataIndex: 'name',
   },
   {
-    title: 'Total',
-    dataIndex: 'formatted_total',
-  },
-  {
-    title: 'Start Date',
-    dataIndex: 'start_date',
-  },
-  {
-    title: 'Due Date',
-    dataIndex: 'due_date',
+    title: 'Nickname',
+    dataIndex: 'nick_name',
   },
   {
     title: 'Actions',
@@ -108,23 +96,19 @@ const columns = [
   },
 ]
 
-fetchProjects() // Initial fetch
+fetchRecords() // Initial fetch
 </script>
 
 <template>
   <DefaultLayout>
-    <a-card title="Project List" :loading="loading">
+    <a-card title="Stakeholders List" :loading="loading">
       <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center">
-        <a-input
-          v-model:value="filters.name"
-          placeholder="Filter by project name"
-          style="width: 300px"
-        />
+        <a-input v-model:value="filters.name" placeholder="Filter by name" style="width: 300px" />
         <a-range-picker v-model:value="filters.dateRange" style="width: 300px" :allowClear="true" />
-        <a-button type="primary" @click="fetchProjects">Search</a-button>
+        <a-button type="primary" @click="fetchRecords">Search</a-button>
       </div>
       <a-table
-        :data-source="projects"
+        :data-source="records"
         :pagination="pagination"
         @change="handleTableChange"
         rowKey="id"

@@ -21,6 +21,11 @@ const menuItems: Array<object> = [
     icon: 'fa fa-user',
   },
   {
+    name: 'Stakeholders',
+    to: '/stakeholders',
+    icon: 'fa fa-user',
+  },
+  {
     name: 'Login',
     to: '/login',
     icon: 'fa fa-user',
