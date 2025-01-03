@@ -10,11 +10,10 @@ defineOptions({
   name: 'StakeholdersCreate',
 })
 
-const form = ref()
 const loading = ref(false)
 const errorMessages = reactive({
   name: '',
-  nickname: '',
+  nick_name: '',
 })
 
 const record = reactive({
@@ -45,14 +44,13 @@ const resetForm = () => {
     name: '',
     nickname: null,
   })
-  form.value?.resetFields()
 }
 </script>
 
 <template>
   <DefaultLayout>
     <a-card :loading="loading" title="Add Stakeholder">
-      <a-form :form="form" ref="form" @submit.prevent="handleSubmit" layout="vertical">
+      <a-form @submit.prevent="handleSubmit" layout="vertical">
         <a-form-item
           label="Name"
           :help="errorMessages.name"
@@ -63,8 +61,8 @@ const resetForm = () => {
 
         <a-form-item
           label="NIck Name"
-          :help="errorMessages.nickname"
-          :validate-status="errorMessages.nickname ? 'error' : ''"
+          :help="errorMessages.nick_name"
+          :validate-status="errorMessages.nick_name ? 'error' : ''"
         >
           <a-input v-model:value="record.nickname" placeholder="Enter nickname" />
         </a-form-item>

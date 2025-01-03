@@ -23,6 +23,16 @@ const router = createRouter({
       component: () => import('@/views/Projects/Create.vue'),
     },
     {
+      path: '/stakeholders',
+      name: 'stakeholders',
+      component: () => import('@/views/Stakeholders/Index.vue'),
+    },
+    {
+      path: '/stakeholders/create',
+      name: 'stakeholders.create',
+      component: () => import('@/views/Stakeholders/Create.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('@/views/Auth/Login.vue'),

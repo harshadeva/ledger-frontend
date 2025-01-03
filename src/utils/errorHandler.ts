@@ -10,6 +10,7 @@ export const handleAxiosError = (
   error: AxiosError,
   defaultMessage = 'Something went wrong. Please try again.',
 ) => {
+  console.error(error)
   // Check for validation errors or specific server errors
   if (error?.response?.data?.error) {
     const serverError = error.response.data.error

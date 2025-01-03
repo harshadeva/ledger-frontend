@@ -16,10 +16,15 @@ interface Project {
   total: number
   start_date: string
   due_date: string
+  description?: string // Optional field for details
 }
 
 const loading = ref(false)
+const tableLoading = ref(false)
 const projects = ref<Project[]>([])
+const selectedProject = ref<Project | null>(null)
+const isDetailsModalVisible = ref(false)
+
 const pagination = reactive({
   current: 1,
   pageSize: 10,
@@ -28,19 +33,20 @@ const pagination = reactive({
 
 const filters = reactive({
   name: '',
-  dateRange: [] as [string | null, string | null],
+  startDate: null as string | null,
+  dueDate: null as string | null,
 })
 
 const fetchProjects = async () => {
   try {
-    loading.value = true
+    tableLoading.value = true
     const response = await apiClient.get('/projects', {
       params: {
         page: pagination.current,
         pageSize: pagination.pageSize,
         name: filters.name,
-        startDate: filters.dateRange[0],
-        dueDate: filters.dateRange[1],
+        start_date: filters.startDate,
+        due_date: filters.dueDate,
       },
     })
 
@@ -49,12 +55,27 @@ const fetchProjects = async () => {
   } catch (error) {
     message.error('Failed to load projects. Please try again.')
   } finally {
-    loading.value = false
+    tableLoading.value = false
   }
 }
 
-// Watch for filter or pagination changes
-watch([() => filters.name, () => filters.dateRange, () => pagination.current], fetchProjects)
+// Watch for pagination changes
+watch(() => pagination.current, fetchProjects)
+
+// Manual search trigger
+const handleSearch = () => {
+  pagination.current = 1 // Reset to the first page
+  fetchProjects()
+}
+
+// Clear all filters and reset to default state
+const handleClearFilters = () => {
+  filters.name = ''
+  filters.startDate = null
+  filters.dueDate = null
+  pagination.current = 1
+  fetchProjects()
+}
 
 const handleTableChange = (paginationInfo: { current: number; pageSize: number }) => {
   pagination.current = paginationInfo.current
@@ -85,6 +106,19 @@ const handleDelete = async (id: number) => {
   })
 }
 
+// Fetch project details for the modal
+const fetchProjectDetails = async (id: number) => {
+  try {
+    selectedProject.value = null
+    isDetailsModalVisible.value = true
+    const response = await apiClient.get(`/projects/${id}`)
+    selectedProject.value = response.data.data
+  } catch (error) {
+    const err = error as AxiosError
+    handleAxiosError(err)
+  }
+}
+
 const columns = [
   {
     title: 'Name',
@@ -113,34 +147,89 @@ fetchProjects() // Initial fetch
 
 <template>
   <DefaultLayout>
-    <a-card title="Project List" :loading="loading">
+    <a-card title="Project List">
+      <!-- Search Form Area -->
       <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center">
         <a-input
           v-model:value="filters.name"
           placeholder="Filter by project name"
           style="width: 300px"
+          @keypress.enter="handleSearch"
         />
-        <a-range-picker v-model:value="filters.dateRange" style="width: 300px" :allowClear="true" />
-        <a-button type="primary" @click="fetchProjects">Search</a-button>
+        <a-date-picker
+          v-model:value="filters.startDate"
+          placeholder="Start Date"
+          style="width: 150px"
+          :allowClear="true"
+        />
+        <a-date-picker
+          v-model:value="filters.dueDate"
+          placeholder="Due Date"
+          style="width: 150px"
+          :allowClear="true"
+        />
+        <a-button type="primary" @click="handleSearch">Search</a-button>
+        <a-button @click="handleClearFilters">Clear All</a-button>
       </div>
+
+      <!-- Table Area -->
       <a-table
         :data-source="projects"
         :pagination="pagination"
         @change="handleTableChange"
         rowKey="id"
-        :loading="loading"
+        :loading="tableLoading"
         :columns="columns"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.dataIndex === 'actions'">
-            <a-button danger @click="handleDelete(record.id)"> Delete </a-button>
+            <a-space>
+              <a-button class="btn-info" @click="fetchProjectDetails(record.id)">View</a-button>
+              <a-button danger @click="handleDelete(record.id)">Delete</a-button>
+            </a-space>
           </template>
         </template>
       </a-table>
     </a-card>
+
+    <!-- Project Details Modal -->
+    <a-modal
+      v-model:open="isDetailsModalVisible"
+      title="Project Details"
+      :footer="null"
+      width="600px"
+      class="custom-modal"
+    >
+      <template v-if="selectedProject === null">
+        <a-skeleton active />
+      </template>
+      <template v-else>
+        <div>
+          <p><strong>Name:</strong> {{ selectedProject.name }}</p>
+          <p><strong>Total:</strong> {{ selectedProject.total }}</p>
+          <p><strong>Start Date:</strong> {{ selectedProject.start_date }}</p>
+          <p><strong>Due Date:</strong> {{ selectedProject.due_date }}</p>
+          <p><strong>Description:</strong> {{ selectedProject.description || 'N/A' }}</p>
+        </div>
+      </template>
+    </a-modal>
   </DefaultLayout>
 </template>
 
-<style scoped>
+<style lang="scss">
 /* Add custom styles if necessary */
+.custom-modal {
+  .ant-modal-header {
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+  }
+
+  .ant-modal-footer {
+    border-top: none;
+  }
+
+  .ant-modal-body {
+    padding: 20px;
+  }
+}
 </style>
