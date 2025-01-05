@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import Sidebar from './Sidebar.vue'
 
 const collapsed = ref<boolean>(false)
 const selectedKeys = ref<string[]>(['1'])
 
 const menuItems: Array<object> = [
   {
-    name: 'Projects',
+    name: 'Home',
     to: '/',
     icon: 'fa fa-user',
   },
@@ -16,18 +17,13 @@ const menuItems: Array<object> = [
     icon: 'fa fa-user',
   },
   {
-    name: 'Create Project',
-    to: '/projects/create',
-    icon: 'fa fa-user',
-  },
-  {
     name: 'Stakeholders',
     to: '/stakeholders',
     icon: 'fa fa-user',
   },
   {
-    name: 'Create Stakeholders',
-    to: '/stakeholders/create',
+    name: 'Transactions',
+    to: '/transactions',
     icon: 'fa fa-user',
   },
   {
@@ -40,21 +36,12 @@ const menuItems: Array<object> = [
 
 <template>
   <a-layout>
-    <a-layout-sider
+    <Sidebar
       v-model:collapsed="collapsed"
-      :trigger="null"
-      collapsible
-      :style="{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0 }"
-    >
-      <div class="logo" />
-      <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-        <a-menu-item v-for="(item, index) in menuItems" :key="index">
-          <shop-outlined />
-          <router-link :to="item.to">{{ item.name }}</router-link>
-        </a-menu-item>
-      </a-menu>
-    </a-layout-sider>
-    <a-layout :style="{ marginLeft: '200px' }">
+      v-model:selectedKeys="selectedKeys"
+      :menuItems="menuItems"
+    />
+    <a-layout>
       <a-layout-header style="background: #fff; padding: 0">
         <menu-unfold-outlined
           v-if="collapsed"
@@ -69,18 +56,13 @@ const menuItems: Array<object> = [
         <slot />
       </a-layout-content>
       <a-layout-footer :style="{ textAlign: 'center' }">
-        Ant Design ©2018 Created by Ant UED
+        Ledger ©2018 Created by Harshadeva
       </a-layout-footer>
     </a-layout>
   </a-layout>
 </template>
 
 <style scoped>
-.logo {
-  height: 32px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 16px;
-}
 .site-layout .site-layout-background {
   background: #fff;
 }

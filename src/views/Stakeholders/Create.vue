@@ -25,7 +25,7 @@ const handleSubmit = async () => {
   try {
     loading.value = true
     resetFormErrors(errorMessages)
-    const response = await apiClient.post('/people', {
+    const response = await apiClient.post('/stakeholders', {
       name: record.name,
       nick_name: record.nickname,
     })
@@ -49,6 +49,13 @@ const resetForm = () => {
 
 <template>
   <DefaultLayout>
+    <a-breadcrumb class="breadcrumb">
+      <a-breadcrumb-item> <router-link to="/">Home</router-link></a-breadcrumb-item>
+      <a-breadcrumb-item>
+        <router-link to="/stakeholders">Stakeholders</router-link></a-breadcrumb-item
+      >
+      <a-breadcrumb-item>Create</a-breadcrumb-item>
+    </a-breadcrumb>
     <a-card :loading="loading" title="Add Stakeholder">
       <a-form @submit.prevent="handleSubmit" layout="vertical">
         <a-form-item

@@ -2,3 +2,33 @@
     border-color: #17a2b8;
     color: #17a2b8;
 }
+
+.breadcrumb {
+    margin-bottom: 16px
+}
+
+.create-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.clear-icon {
+    margin-right: 5px;
+}
+
+.na-tag {
+    opacity: 0.8;
+}
+
+.text-danger {
+    color: red;
+}
+
+.text-success {
+    color: green;
+}
+
+.ant-layout .ant-layout-sider-trigger {
+    background-color: $primary-color;
+}

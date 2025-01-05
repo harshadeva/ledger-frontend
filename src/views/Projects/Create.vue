@@ -59,6 +59,11 @@ const resetForm = () => {
 
 <template>
   <DefaultLayout>
+    <a-breadcrumb class="breadcrumb">
+      <a-breadcrumb-item> <router-link to="/">Home</router-link></a-breadcrumb-item>
+      <a-breadcrumb-item> <router-link to="/projects">Projects</router-link></a-breadcrumb-item>
+      <a-breadcrumb-item>Create</a-breadcrumb-item>
+    </a-breadcrumb>
     <a-card :loading="loading" title="Create Project">
       <a-form :form="form" ref="form" @submit.prevent="handleSubmit" layout="vertical">
         <a-form-item

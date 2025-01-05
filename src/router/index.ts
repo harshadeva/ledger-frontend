@@ -33,6 +33,16 @@ const router = createRouter({
       component: () => import('@/views/Stakeholders/Create.vue'),
     },
     {
+      path: '/transactions',
+      name: 'transactions',
+      component: () => import('@/views/Transactions/Index.vue'),
+    },
+    {
+      path: '/transactions/create',
+      name: 'transactions.create',
+      component: () => import('@/views/Transactions/Create.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('@/views/Auth/Login.vue'),

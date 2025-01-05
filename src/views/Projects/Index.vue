@@ -5,6 +5,7 @@ import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
 import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
+import { formatCurrency } from '@/utils/formatData'
 
 defineOptions({
   name: 'ProjectList',
@@ -126,7 +127,11 @@ const columns = [
   },
   {
     title: 'Total',
-    dataIndex: 'formatted_total',
+    dataIndex: 'total',
+    customRender: (record: object) => {
+      return formatCurrency(record.text)
+    },
+    align: 'right',
   },
   {
     title: 'Start Date',
@@ -137,8 +142,33 @@ const columns = [
     dataIndex: 'due_date',
   },
   {
+    title: 'Income',
+    dataIndex: 'total_income',
+    customRender: (record: { text: number }) => {
+      return formatCurrency(record.text)
+    },
+    align: 'right',
+  },
+  {
+    title: 'Expense',
+    dataIndex: 'total_expense',
+    customRender: (record: { text: number }) => {
+      return formatCurrency(record.text)
+    },
+    align: 'right',
+  },
+  {
+    title: 'P & L',
+    dataIndex: 'profit',
+    align: 'right',
+  },
+  {
     title: 'Actions',
     dataIndex: 'actions',
+    customRender: (record: { text: number }) => {
+      return formatCurrency(record.text)
+    },
+    align: 'right',
   },
 ]
 
@@ -147,7 +177,18 @@ fetchProjects() // Initial fetch
 
 <template>
   <DefaultLayout>
+    <a-breadcrumb class="breadcrumb">
+      <a-breadcrumb-item> <router-link to="/">Home</router-link></a-breadcrumb-item>
+      <a-breadcrumb-item>Projects</a-breadcrumb-item>
+    </a-breadcrumb>
+
     <a-card title="Project List">
+      <div class="create-row">
+        <a-button type="primary" @click="() => $router.push('/projects/create')"
+          >Create New Project</a-button
+        >
+      </div>
+
       <!-- Search Form Area -->
       <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center">
         <a-input
@@ -169,7 +210,9 @@ fetchProjects() // Initial fetch
           :allowClear="true"
         />
         <a-button type="primary" @click="handleSearch">Search</a-button>
-        <a-button @click="handleClearFilters">Clear All</a-button>
+        <a-button @click="handleClearFilters" danger
+          ><FaIcon icon="far fa-times-circle" class="clear-icon" /> Clear All</a-button
+        >
       </div>
 
       <!-- Table Area -->
@@ -182,6 +225,11 @@ fetchProjects() // Initial fetch
         :columns="columns"
       >
         <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'profit'">
+            <a-space :class="[record.profit < 0 ? 'text-danger' : 'text-success']">
+              <b> {{ formatCurrency(record.total_income - record.total_expense) }} </b>
+            </a-space>
+          </template>
           <template v-if="column.dataIndex === 'actions'">
             <a-space>
               <a-button class="btn-info" @click="fetchProjectDetails(record.id)">View</a-button>
@@ -217,7 +265,6 @@ fetchProjects() // Initial fetch
 </template>
 
 <style lang="scss">
-/* Add custom styles if necessary */
 .custom-modal {
   .ant-modal-header {
     border-bottom: none;
