@@ -6,6 +6,7 @@ import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
 import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
 import { formatCurrency } from '@/utils/formatData'
+import type { AxiosErrorWithData } from '@/types'
 
 defineOptions({
   name: 'ProjectList',
@@ -54,6 +55,8 @@ const fetchProjects = async () => {
     projects.value = response.data.data
     pagination.total = response.data.total
   } catch (error) {
+    const err = error as AxiosError
+    console.log(err)
     message.error('Failed to load projects. Please try again.')
   } finally {
     tableLoading.value = false
@@ -98,7 +101,7 @@ const handleDelete = async (id: number) => {
         message.success(response?.data?.message)
         fetchProjects()
       } catch (error) {
-        const err = error as AxiosError
+        const err = error as AxiosErrorWithData
         handleAxiosError(err)
       } finally {
         loading.value = false
@@ -115,7 +118,7 @@ const fetchProjectDetails = async (id: number) => {
     const response = await apiClient.get(`/projects/${id}`)
     selectedProject.value = response.data.data
   } catch (error) {
-    const err = error as AxiosError
+    const err = error as AxiosErrorWithData
     handleAxiosError(err)
   }
 }
@@ -128,7 +131,7 @@ const columns = [
   {
     title: 'Total',
     dataIndex: 'total',
-    customRender: (record: object) => {
+    customRender: (record: { text: number }) => {
       return formatCurrency(record.text)
     },
     align: 'right',

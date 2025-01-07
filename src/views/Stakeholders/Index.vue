@@ -5,6 +5,7 @@ import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
 import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
+import type { AxiosErrorWithData } from '@/types'
 
 defineOptions({
   name: 'StakeholdersList',
@@ -26,7 +27,7 @@ const pagination = reactive({
 
 const filters = reactive({
   name: '',
-  dateRange: [] as [string | null, string | null],
+  dateRange: [],
 })
 
 const fetchRecords = async () => {
@@ -43,6 +44,8 @@ const fetchRecords = async () => {
     records.value = response.data.data
     pagination.total = response.data.total
   } catch (error) {
+    const err = error as AxiosError
+    console.log(err)
     message.error('Failed to load data. Please try again.')
   } finally {
     loading.value = false
@@ -72,7 +75,7 @@ const handleDelete = async (id: number) => {
         message.success(response?.data?.message)
         fetchRecords()
       } catch (error) {
-        const err = error as AxiosError
+        const err = error as AxiosErrorWithData
         handleAxiosError(err)
       } finally {
         loading.value = false

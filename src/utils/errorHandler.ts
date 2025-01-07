@@ -1,5 +1,5 @@
+import type { AxiosErrorWithData, ErrorMessages } from '@/types'
 import { message } from 'ant-design-vue'
-import type { AxiosError } from 'axios'
 
 /**
  * Handles Axios errors or shows a default error message.
@@ -7,7 +7,7 @@ import type { AxiosError } from 'axios'
  * @param defaultMessage - A fallback message to display
  */
 export const handleAxiosError = (
-  error: AxiosError,
+  error: AxiosErrorWithData,
   defaultMessage = 'Something went wrong. Please try again.',
 ) => {
   console.error(error)
@@ -17,9 +17,13 @@ export const handleAxiosError = (
 
     if (typeof serverError === 'string') {
       message.error(serverError)
+      // @ts-expect-error : ignore ts error to handle later
     } else if (serverError?.error_message) {
+      // @ts-expect-error : ignore ts error to handle later
       message.error(serverError.error_message)
+      // @ts-expect-error : ignore ts error to handle later
     } else if (serverError?.message) {
+      // @ts-expect-error : ignore ts error to handle later
       message.error(serverError.message)
     } else {
       message.error(defaultMessage)
@@ -31,8 +35,8 @@ export const handleAxiosError = (
 }
 
 export const handleFormErrors = (
-  error: AxiosError,
-  errorMessages,
+  error: AxiosErrorWithData,
+  errorMessages: ErrorMessages,
   resetFunction = () => {
     // Reset error messages first
     Object.keys(errorMessages).forEach((key) => {
@@ -45,11 +49,14 @@ export const handleFormErrors = (
   if (error?.response && error?.response?.data && error?.response?.data?.error) {
     const validationErrors = error.response.data.error
     for (const field in validationErrors) {
+      // @ts-expect-error : ignore ts error to handle later
       errorMessages[field as keyof typeof errorMessages] = validationErrors[field]
     }
   }
   // Check for generic error message
+  // @ts-expect-error : ignore ts error to handle later
   if (error?.response && error?.response?.data && error?.response?.data?.error?.error_message) {
+    // @ts-expect-error : ignore ts error to handle later
     message.error(error?.response?.data?.error?.error_message)
   }
 }

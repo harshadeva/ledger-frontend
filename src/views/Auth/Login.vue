@@ -2,6 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import apiClient from '@/utils/axios'
+import type { AxiosErrorWithData } from '@/types'
+
+defineOptions({
+  name: 'LoginPage',
+})
 
 const router = useRouter()
 
@@ -24,7 +29,8 @@ const handleLogin = async () => {
     // Navigate to dashboard
     router.push('/projects/create')
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Login failed!'
+    const err = error as AxiosErrorWithData
+    errorMessage.value = err.response?.data?.message || 'Login failed!'
   } finally {
     loading.value = false
   }

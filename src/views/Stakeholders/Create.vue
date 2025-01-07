@@ -3,8 +3,8 @@ import { reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
-import { AxiosError } from 'axios'
 import { handleFormErrors, resetFormErrors } from '@/utils/errorHandler'
+import type { AxiosErrorWithData } from '@/types'
 
 defineOptions({
   name: 'StakeholdersCreate',
@@ -32,7 +32,7 @@ const handleSubmit = async () => {
     message.success(response.data.message)
     resetForm()
   } catch (error) {
-    const err = error as AxiosError
+    const err = error as AxiosErrorWithData
     handleFormErrors(err, errorMessages)
   } finally {
     loading.value = false

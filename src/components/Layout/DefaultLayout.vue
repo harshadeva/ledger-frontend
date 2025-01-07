@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
+import type { MenuItem } from '@/types'
 
 const collapsed = ref<boolean>(false)
 const selectedKeys = ref<string[]>(['1'])
 
-const menuItems: Array<object> = [
+const menuItems: MenuItem[] = [
   {
     name: 'Home',
     to: '/',
@@ -41,7 +42,7 @@ const menuItems: Array<object> = [
       v-model:selectedKeys="selectedKeys"
       :menuItems="menuItems"
     />
-    <a-layout>
+    <a-layout :style="{ marginLeft: '200px' }">
       <a-layout-header style="background: #fff; padding: 0">
         <menu-unfold-outlined
           v-if="collapsed"
@@ -51,6 +52,7 @@ const menuItems: Array<object> = [
         <menu-fold-outlined v-else class="trigger" @click="() => (collapsed = !collapsed)" />
       </a-layout-header>
       <a-layout-content
+        class="content-wrapper"
         :style="{ margin: '24px 16px', padding: '24px', background: '#fff', minHeight: '280px' }"
       >
         <slot />
@@ -69,5 +71,9 @@ const menuItems: Array<object> = [
 
 [data-theme='dark'] .site-layout .site-layout-background {
   background: #141414;
+}
+
+.content-wrapper {
+  overflow-y: auto;
 }
 </style>
