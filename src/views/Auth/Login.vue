@@ -10,7 +10,7 @@ defineOptions({
 
 const router = useRouter()
 
-const user = ref({ email: 'hpbandara94@gmail.com', password: '12345678' })
+const user = ref({ email: '', password: '' })
 const loading = ref(false)
 const errorMessage = ref('')
 
