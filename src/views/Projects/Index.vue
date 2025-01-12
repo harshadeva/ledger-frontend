@@ -7,6 +7,7 @@ import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
 import { formatCurrency } from '@/utils/formatData'
 import type { AxiosErrorWithData } from '@/types'
+import { DownOutlined } from '@ant-design/icons-vue'
 
 defineOptions({
   name: 'ProjectList',
@@ -53,7 +54,7 @@ const fetchProjects = async () => {
     })
 
     projects.value = response.data.data
-    pagination.total = response.data.total
+    pagination.total = response.data.pagination.meta.total
   } catch (error) {
     const err = error as AxiosError
     console.log(err)
@@ -168,10 +169,7 @@ const columns = [
   {
     title: 'Actions',
     dataIndex: 'actions',
-    customRender: (record: { text: number }) => {
-      return formatCurrency(record.text)
-    },
-    align: 'right',
+    align: 'center',
   },
 ]
 
@@ -234,10 +232,18 @@ fetchProjects() // Initial fetch
             </a-space>
           </template>
           <template v-if="column.dataIndex === 'actions'">
-            <a-space>
-              <a-button class="btn-info" @click="fetchProjectDetails(record.id)">View</a-button>
-              <a-button danger @click="handleDelete(record.id)">Delete</a-button>
-            </a-space>
+            <a-dropdown class="table-action-btn">
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="fetchProjectDetails(record.id)" key="1"> View </a-menu-item>
+                  <a-menu-item @click="handleDelete(record.id)" key="2"> Delete </a-menu-item>
+                </a-menu>
+              </template>
+              <a-button>
+                Actions
+                <DownOutlined />
+              </a-button>
+            </a-dropdown>
           </template>
         </template>
       </a-table>

@@ -7,18 +7,28 @@ import { handleAxiosError } from '@/utils/errorHandler'
 import type { AxiosError } from 'axios'
 import { formatCurrency } from '@/utils/formatData'
 import type { AxiosErrorWithData } from '@/types'
+import { useRouter } from 'vue-router'
+import { DownOutlined } from '@ant-design/icons-vue'
 
 defineOptions({
   name: 'TransactionsList',
 })
+const router = useRouter()
 
 interface Transaction {
   id: number
-  name: string
-  nickname: string
+  description: string
+  type: string
+  amount: string
+  date: string
+  stakeholder: string
+  project: string
+  category: string
+  account: string
 }
 
 const loading = ref(false)
+const tableLoading = ref(false)
 const records = ref<Transaction[]>([])
 const pagination = reactive({
   current: 1,
@@ -27,34 +37,52 @@ const pagination = reactive({
 })
 
 const filters = reactive({
-  name: null as string | null,
-  dateRange: [null, null] as [string | null, string | null],
+  description: '',
+  startDate: null as string | null,
+  endDate: null as string | null,
 })
+
+// Manual search trigger
+const handleSearch = () => {
+  pagination.current = 1 // Reset to the first page
+  fetchRecords()
+}
+
+// Clear all filters and reset to default state
+const handleClearFilters = () => {
+  filters.description = ''
+  filters.startDate = null
+  filters.endDate = null
+  pagination.current = 1
+  fetchRecords()
+}
 
 const fetchRecords = async () => {
   try {
-    loading.value = true
+    tableLoading.value = true
     const response = await apiClient.get('/transactions', {
       params: {
         page: pagination.current,
         pageSize: pagination.pageSize,
-        name: filters.name,
+        description: filters.description,
+        start_date: filters.startDate,
+        end_date: filters.endDate,
       },
     })
 
     records.value = response.data.data
-    pagination.total = response.data.total
+    pagination.total = response.data.pagination.meta.total
   } catch (error) {
     const err = error as AxiosError
     console.log(err)
     message.error('Failed to load data. Please try again.')
   } finally {
-    loading.value = false
+    tableLoading.value = true
   }
 }
 
 // Watch for filter or pagination changes
-watch([() => filters.name, () => pagination.current], fetchRecords)
+watch(() => pagination.current, fetchRecords)
 
 const handleTableChange = (paginationInfo: { current: number; pageSize: number }) => {
   pagination.current = paginationInfo.current
@@ -72,7 +100,7 @@ const handleDelete = async (id: number) => {
     onOk: async () => {
       try {
         loading.value = true
-        const response = await apiClient.delete(`/people/${id}`)
+        const response = await apiClient.delete(`/transactions/${id}`)
         message.success(response?.data?.message)
         fetchRecords()
       } catch (error) {
@@ -83,6 +111,10 @@ const handleDelete = async (id: number) => {
       }
     },
   })
+}
+
+const handleEdit = (id: number) => {
+  router.push({ name: 'transactions.edit', params: { id } })
 }
 
 const columns = [
@@ -125,6 +157,7 @@ const columns = [
   {
     title: 'Actions',
     dataIndex: 'actions',
+    align: 'center',
   },
 ]
 
@@ -144,9 +177,28 @@ fetchRecords() // Initial fetch
         >
       </div>
       <div style="margin-bottom: 16px; display: flex; gap: 16px; align-items: center">
-        <a-input v-model:value="filters.name" placeholder="Filter by name" style="width: 300px" />
-        <a-range-picker v-model:value="filters.dateRange" style="width: 300px" :allowClear="true" />
-        <a-button type="primary" @click="fetchRecords">Search</a-button>
+        <a-input
+          @keypress.enter="handleSearch"
+          v-model:value="filters.description"
+          placeholder="Filter by description"
+          style="width: 300px"
+        />
+        <a-date-picker
+          v-model:value="filters.startDate"
+          placeholder="Start Date"
+          style="width: 150px"
+          :allowClear="true"
+        />
+        <a-date-picker
+          v-model:value="filters.endDate"
+          placeholder="End Date"
+          style="width: 150px"
+          :allowClear="true"
+        />
+        <a-button type="primary" @click="handleSearch">Search</a-button>
+        <a-button @click="handleClearFilters" danger
+          ><FaIcon icon="far fa-times-circle" class="clear-icon" /> Clear All</a-button
+        >
       </div>
       <a-table
         :data-source="records"
@@ -166,7 +218,18 @@ fetchRecords() // Initial fetch
             <span v-else>{{ text }}</span>
           </template>
           <template v-if="column.dataIndex === 'actions'">
-            <a-button danger @click="handleDelete(record.id)"> Delete </a-button>
+            <a-dropdown class="table-action-btn">
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click="handleEdit(record.id)" key="1"> Edit </a-menu-item>
+                  <a-menu-item @click="handleDelete(record.id)" key="2"> Delete </a-menu-item>
+                </a-menu>
+              </template>
+              <a-button>
+                Actions
+                <DownOutlined />
+              </a-button>
+            </a-dropdown>
           </template>
         </template>
       </a-table>
