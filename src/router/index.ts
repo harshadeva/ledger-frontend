@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/Home.vue'
-import { isAuthenticated } from '@/utils/auth'
+import { isAuthenticated, logout } from '@/utils/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -54,6 +54,15 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/Auth/Login.vue'),
+    },
+    {
+      path: '/logout',
+      name: 'logout',
+      beforeEnter: () => {
+        logout()
+        return '/login' // Redirect after logout
+      },
+      redirect: '', //no redirection need here. will redirect to login route from  beforeEnter middleware
     },
   ],
 })

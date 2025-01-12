@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
 import type { MenuItem } from '@/types'
+import Navbar from './Navbar.vue'
 
 const collapsed = ref<boolean>(false)
 const selectedKeys = ref<string[]>(['1'])
@@ -27,11 +28,6 @@ const menuItems: MenuItem[] = [
     to: '/transactions',
     icon: 'fa fa-user',
   },
-  {
-    name: 'Login',
-    to: '/login',
-    icon: 'fa fa-user',
-  },
 ]
 </script>
 
@@ -50,6 +46,7 @@ const menuItems: MenuItem[] = [
           @click="() => (collapsed = !collapsed)"
         />
         <menu-fold-outlined v-else class="trigger" @click="() => (collapsed = !collapsed)" />
+        <Navbar />
       </a-layout-header>
       <a-layout-content
         class="content-wrapper"
