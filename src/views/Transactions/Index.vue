@@ -32,7 +32,7 @@ const tableLoading = ref(false)
 const records = ref<Transaction[]>([])
 const pagination = reactive({
   current: 1,
-  pageSize: 10,
+  pageSize: 200,
   total: 0,
 })
 

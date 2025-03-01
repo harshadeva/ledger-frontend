@@ -30,7 +30,7 @@ const isDetailsModalVisible = ref(false)
 
 const pagination = reactive({
   current: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: 0,
 })
 
@@ -227,7 +227,13 @@ fetchProjects() // Initial fetch
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.dataIndex === 'profit'">
-            <a-space :class="[record.profit < 0 ? 'text-danger' : 'text-success']">
+            <a-space
+              :class="[
+                parseFloat(record.total_income) - parseFloat(record.total_expense) < 0
+                  ? 'text-danger'
+                  : 'text-success',
+              ]"
+            >
               <b> {{ formatCurrency(record.total_income - record.total_expense) }} </b>
             </a-space>
           </template>
@@ -287,5 +293,9 @@ fetchProjects() // Initial fetch
   .ant-modal-body {
     padding: 20px;
   }
+}
+
+.text-danger {
+  color: red;
 }
 </style>

@@ -21,7 +21,7 @@ const loading = ref(false)
 const records = ref<Stakeholder[]>([])
 const pagination = reactive({
   current: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: 0,
 })
 

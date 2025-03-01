@@ -1,46 +1,71 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
-import { message } from 'ant-design-vue'
-import axios from 'axios'
+import { onMounted, reactive } from 'vue'
+import apiClient from '@/utils/axios'
 import DefaultLayout from '@/components/Layout/DefaultLayout.vue'
+import { handleAxiosError } from '@/utils/errorHandler'
+import type { AxiosErrorWithData } from '@/types'
+import { formatCurrency } from '@/utils/formatData'
 
 defineOptions({
   name: 'HomePage',
 })
 
-const form = ref()
-const loading = ref(false)
+interface Dashboard {
+  totalIncome: number
+  totalExpense: number
+  capitalDeposit: number
+  capitalWithdraw: number
+}
 
-const project = reactive({
-  name: '',
-  total: null as number | null,
-  startDate: null as string | null,
-  endDate: null as string | null,
+const dashboardData = reactive<Dashboard>({
+  totalIncome: 0,
+  totalExpense: 0,
+  capitalDeposit: 0,
+  capitalWithdraw: 0,
 })
-
-const handleSubmit = async () => {
+// Fetch project details for the modal
+const fetchProjectDetails = async () => {
   try {
-    loading.value = true
-    await axios.post('/projects', {
-      name: project.name,
-      total: project.total,
-      startDate: project.startDate,
-      endDate: project.endDate,
-    })
-    message.success('Project created successfully!')
-    form.value?.resetFields()
+    const response = await apiClient.get(`/dashboard`)
+    const responseData = response.data
+    dashboardData.totalExpense = responseData?.totalExpense
+    dashboardData.totalIncome = responseData?.totalIncome
+    dashboardData.capitalDeposit = responseData?.capitalDeposit
+    dashboardData.capitalWithdraw = responseData?.capitalWithdraw
   } catch (error) {
-    message.error('Failed to create project. Please try again later.')
-  } finally {
-    loading.value = false
+    const err = error as AxiosErrorWithData
+    handleAxiosError(err)
   }
 }
+
+onMounted(() => {
+  fetchProjectDetails()
+})
 </script>
 
 <template>
-  <DefaultLayout :container="true"> </DefaultLayout>
+  <DefaultLayout>
+    <a-breadcrumb class="breadcrumb">
+      <a-breadcrumb-item> <router-link to="/">Home</router-link></a-breadcrumb-item>
+      <a-breadcrumb-item>Dashboard</a-breadcrumb-item>
+    </a-breadcrumb>
+
+    <a-card>
+      <h4>Total Income : {{ formatCurrency(dashboardData?.totalIncome) }}</h4>
+      <h4>Total Expense : {{ formatCurrency(dashboardData?.totalExpense) }}</h4>
+      <h4 v-if="dashboardData?.totalIncome && dashboardData?.totalExpense">
+        Profit : {{ formatCurrency(dashboardData?.totalIncome - dashboardData?.totalExpense) }}
+      </h4>
+    </a-card>
+    <a-card>
+      <h4>Deposited Capital : {{ formatCurrency(dashboardData?.capitalDeposit) }}</h4>
+      <h4>Withdrawal Capital : {{ formatCurrency(dashboardData?.capitalWithdraw) }}</h4>
+      <h4 v-if="dashboardData?.capitalDeposit && dashboardData?.capitalWithdraw">
+        Remaining Capital :
+        {{ formatCurrency(dashboardData?.capitalDeposit - dashboardData?.capitalWithdraw) }}
+      </h4>
+    </a-card>
+  </DefaultLayout>
 </template>
 
-<style scoped>
-/* Add custom styles if necessary */
-</style>
+<style lang="scss"></style>
